@@ -9,31 +9,45 @@ export default function Dashboard() {
   const gigs = useSelector((state) => state.gigs.list);
   const user = useSelector((state) => state.auth.user);
 
+  // ✅ Fetch gigs ONLY after user is ready
   useEffect(() => {
-    dispatch(fetchGigs());
-  }, [dispatch]);
+  if (!user) return;     // ⛔ prevents 401
+  dispatch(fetchGigs());
+}, [dispatch, user]);
 
-  // Socket.io setup
+  // ✅ Socket setup (ONE TIME per user)
   useEffect(() => {
-    if (user?._id) {
-      socket.emit("join", user._id);
-    }
+    if (!user?._id) return;
 
-    socket.on("hired", (data) => {
+    console.log("✅ Joining socket room:", user._id);
+    socket.emit("join", user._id);
+
+    const onHired = (data) => {
+      console.log("🔥 HIRED EVENT RECEIVED:", data);
       alert(`🎉 You have been hired for "${data.gigTitle}"`);
-    });
+    };
 
-    return () => socket.off("hired");
+    socket.on("hired", onHired);
+
+    return () => {
+      socket.off("hired", onHired);
+    };
   }, [user]);
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>Dashboard</h2>
 
-      {user && <p>Welcome, <b>{user.name}</b></p>}
+      {user && (
+        <p>
+          Welcome, <b>{user.name}</b>
+        </p>
+      )}
 
       <Link to="/post">
-        <button style={{ marginBottom: "20px" }}>Post a Gig</button>
+        <button style={{ marginBottom: "20px" }}>
+          Post a Gig
+        </button>
       </Link>
 
       <h3>Open Gigs</h3>
