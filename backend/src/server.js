@@ -12,18 +12,24 @@ import bidRoutes from "./routes/bid.routes.js";
 
 connectDB();
 
-app.use("/api/auth", authRoutes);
-app.use("/api/gigs", gigRoutes);
-app.use("/api/bids", bidRoutes);
-
+// 1️⃣ Create HTTP server
 const server = http.createServer(app);
+
+// 2️⃣ Initialize socket.io
 const io = initSocket(server);
 
+// 3️⃣ 🔥 Attach io to req BEFORE routes
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-server.listen(process.env.PORT, () =>
-  console.log("Server running on port", process.env.PORT)
-);
+// 4️⃣ Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/gigs", gigRoutes);
+app.use("/api/bids", bidRoutes);
+
+// 5️⃣ Start server
+server.listen(process.env.PORT, () => {
+  console.log("Server running on port", process.env.PORT);
+});

@@ -17,36 +17,56 @@ export const getBidsByGig = async (req, res) => {
 
 export const hireBid = async (req, res) => {
   const session = await mongoose.startSession();
-  session.startTransaction();
+  let hiredBid;
+  let gig;
 
   try {
-    const bid = await Bid.findById(req.params.bidId).session(session);
-    const gig = await Gig.findById(bid.gigId).session(session);
+    session.startTransaction();
 
-    if (gig.status === "assigned") throw new Error("Already assigned");
+    hiredBid = await Bid.findById(req.params.bidId).session(session);
+    if (!hiredBid) throw new Error("Bid not found");
 
+    gig = await Gig.findById(hiredBid.gigId).session(session);
+    if (!gig) throw new Error("Gig not found");
+
+    if (gig.status === "assigned") {
+      throw new Error("Gig already assigned");
+    }
+
+    // Assign gig
     gig.status = "assigned";
-    await gig.save();
+    await gig.save({ session });
 
+    // Reject other bids
     await Bid.updateMany(
-      { gigId: gig._id },
-      { status: "rejected" }
-    ).session(session);
+      { gigId: gig._id, _id: { $ne: hiredBid._id } },
+      { status: "rejected" },
+      { session }
+    );
 
-    bid.status = "hired";
-    await bid.save();
+    // Hire selected bid
+    hiredBid.status = "hired";
+    await hiredBid.save({ session });
 
+    // ✅ COMMIT ONLY ONCE
     await session.commitTransaction();
+    session.endSession();
 
-    req.io.to(bid.freelancerId.toString()).emit("hired", {
-      gigTitle: gig.title
-    });
-
-    res.json({ success: true });
   } catch (err) {
     await session.abortTransaction();
-    res.status(400).json({ error: err.message });
-  } finally {
     session.endSession();
+    return res.status(400).json({ error: err.message });
   }
+
+  // 🔔 AFTER TRANSACTION (SAFE ZONE)
+  try {
+    req.io
+      .to(hiredBid.freelancerId.toString())
+      .emit("hired", { gigTitle: gig.title });
+  } catch (socketErr) {
+    console.error("Socket emit failed:", socketErr.message);
+  }
+
+  res.json({ success: true });
 };
+
