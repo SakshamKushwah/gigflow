@@ -1,24 +1,25 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchGigs } from "../features/gigs/gigSlice";
+import { socket } from "../socket";
 
 export default function Dashboard() {
-  const dispatch = useDispatch();
-  const gigs = useSelector(s => s.gigs.list);
 
   useEffect(() => {
-    dispatch(fetchGigs());
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?._id) {
+      socket.emit("join", user._id);
+    }
+
+   socket.on("connect", () => {
+  console.log("✅ Socket connected:", socket.id);
+});
+
+socket.on("hired", (data) => {
+  console.log("🔥 HIRED EVENT RECEIVED", data);
+  alert(`🎉 You have been hired for "${data.gigTitle}"`);
+});
+
+    return () => socket.off("hired");
   }, []);
 
-  return (
-    <div>
-      <h2>Open Gigs</h2>
-      {gigs.map(g => (
-        <div key={g._id}>
-          <h4>{g.title}</h4>
-          <p>{g.description}</p>
-        </div>
-      ))}
-    </div>
-  );
+  return <h2>Dashboard</h2>;
 }
