@@ -2,8 +2,8 @@ import { io } from "socket.io-client";
 
 export const socket = io(import.meta.env.VITE_API_URL, {
   withCredentials: true,
-  transports: ["polling", "websocket"],
+  transports: ["polling"], // ✅ Render-safe
   reconnection: true,
   reconnectionAttempts: Infinity,
-  reconnectionDelay: 500
+  reconnectionDelay: 1000
 });
