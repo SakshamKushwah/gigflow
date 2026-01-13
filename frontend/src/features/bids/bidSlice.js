@@ -21,15 +21,20 @@ export const createBid = createAsyncThunk(
 
 export const hireBid = createAsyncThunk(
   "bids/hire",
-  async ({ bidId, gigId }) => {
-    const res = await api.patch(
-      `/bids/${bidId}/hire`,
-      { gigId } // 🔥 REQUIRED BY BACKEND
-    );
-    return res.data;
+  async ({ bidId, gigId }, thunkAPI) => {
+    try {
+      const res = await api.post(
+        `/bids/${bidId}/hire`,
+        { gigId } // 🔥 REQUIRED
+      );
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || "Hire failed"
+      );
+    }
   }
 );
-
 
 const bidSlice = createSlice({
   name: "bids",
