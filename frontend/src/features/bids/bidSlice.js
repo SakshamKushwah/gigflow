@@ -19,14 +19,17 @@ export const createBid = createAsyncThunk(
   }
 );
 
-// ✅ HIRE BID
 export const hireBid = createAsyncThunk(
   "bids/hire",
-  async (bidId) => {
-    const res = await api.patch(`/bids/${bidId}/hire`);
+  async ({ bidId, gigId }) => {
+    const res = await api.patch(
+      `/bids/${bidId}/hire`,
+      { gigId } // 🔥 REQUIRED BY BACKEND
+    );
     return res.data;
   }
 );
+
 
 const bidSlice = createSlice({
   name: "bids",
