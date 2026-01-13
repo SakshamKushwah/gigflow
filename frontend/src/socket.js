@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:5000", {
+export const socket = io(import.meta.env.VITE_API_URL, {
   withCredentials: true,
-  transports: ["polling", "websocket"], // ✅ allow fallback
+  transports: ["polling", "websocket"],
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 500
