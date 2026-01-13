@@ -1,10 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
-// Load from localStorage
-const storedUser = localStorage.getItem("user")
-  ? JSON.parse(localStorage.getItem("user"))
-  : null;
+// SAFE localStorage load
+let storedUser = null;
+
+try {
+  const rawUser = localStorage.getItem("user");
+  storedUser = rawUser ? JSON.parse(rawUser) : null;
+} catch (e) {
+  localStorage.removeItem("user");
+  storedUser = null;
+}
 
 const storedToken = localStorage.getItem("token") || null;
 
@@ -37,16 +43,28 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
-      localStorage.setItem("token", action.payload.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(action.payload.user)
+      );
+      localStorage.setItem(
+        "token",
+        action.payload.token
+      );
     });
 
     builder.addCase(register.fulfilled, (state, action) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
-      localStorage.setItem("token", action.payload.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(action.payload.user)
+      );
+      localStorage.setItem(
+        "token",
+        action.payload.token
+      );
     });
   },
 });
