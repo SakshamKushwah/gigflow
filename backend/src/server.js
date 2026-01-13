@@ -24,6 +24,13 @@ app.use((req, res, next) => {
   next();
 });
 
+
+
+app.get("/", (req, res) => {
+  res.status(200).send("✅ Backend is running");
+});
+
+
 // 4️⃣ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/gigs", gigRoutes);
