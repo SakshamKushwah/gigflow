@@ -3,17 +3,17 @@ import { Server } from "socket.io";
 export const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-  origin: [
-    "https://gigflow-navy.vercel.app",
-    "http://localhost:5173"
-  ],
-  credentials: true
-}
-
+      origin: [
+        "https://gigflow-navy.vercel.app",
+        "http://localhost:5173"
+      ],
+      credentials: true,
+    },
+    transports: ["websocket"], // 🔥 REQUIRED ON RENDER
   });
 
   io.on("connection", (socket) => {
-    console.log("🔌 Socket connected:", socket.id);
+    console.log("🟢 Socket connected:", socket.id);
 
     socket.on("join", (userId) => {
       socket.join(userId);
@@ -21,7 +21,7 @@ export const initSocket = (server) => {
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected:", socket.id);
+      console.log("🔴 Socket disconnected:", socket.id);
     });
   });
 
