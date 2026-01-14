@@ -19,18 +19,10 @@ export default function GigDetails() {
       {bids.map((bid) => (
         <div key={bid._id}>
           <p>{bid.message} – ₹{bid.price}</p>
-         <button
-  onClick={() =>
-    dispatch(
-      hireBid({
-        bidId: bid._id,
-        gigId: id,
-      })
-    )
-  }
->
+        <button onClick={() => dispatch(hireBid(bid._id))}>
   Hire
 </button>
+
 
         </div>
       ))}
